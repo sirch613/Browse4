@@ -518,14 +518,6 @@ let rightPane = null;
 let splitEnabled = true;
 
 const splitEl = document.getElementById('split');
-const backOverlayEl = document.getElementById('back-overlay');
-const bottomActivationZoneEl = document.getElementById('bottom-activation-zone');
-const historyTagsEl = document.getElementById('history-tags');
-const historyStripEl = document.getElementById('history-strip');
-const historyHeadlineEl = document.getElementById('history-headline-strip');
-const historyClockEl = document.getElementById('history-clock');
-const historyRefreshButton = document.getElementById('history-refresh');
-const historyCopyButton = document.getElementById('history-copy');
 
 const MAX_HISTORY_ITEMS = 12;
 const historyItems = [];
@@ -1010,12 +1002,7 @@ const renderHistoryTags = () => {
 };
 
 const renderHistoryUI = () => {
-  if (!backOverlayEl) {
-    return;
-  }
-  if (!backOverlayEl.querySelector('.overlay-iframe')) {
-    backOverlayEl.innerHTML = '';
-  }
+  // Removed back overlay functionality
 };
 
 const setActiveTag = (tag, force = false) => {
@@ -1108,83 +1095,8 @@ const updatePreviewVisibilityForUrl = (url) => {
   setSplitEnabled(shouldShow);
 };
 
-let backOverlayVisible = false;
-let lastMouseY = window.innerHeight / 2;
-
-const getOverlayHideThreshold = () => {
-  if (!backOverlayEl) {
-    return 0;
-  }
-
-  const rect = backOverlayEl.getBoundingClientRect();
-  const overlayHeight = rect.height || backOverlayEl.offsetHeight || backOverlayEl.clientHeight || 0;
-  const fallbackTop = Math.max(0, window.innerHeight - overlayHeight);
-
-  if (backOverlayVisible && typeof rect.top === 'number' && !Number.isNaN(rect.top)) {
-    return rect.top;
-  }
-
-  return fallbackTop;
-};
-
-const showBackOverlay = () => {
-  if (!backOverlayEl || backOverlayVisible) {
-    return;
-  }
-  backOverlayEl.classList.add('visible');
-  backOverlayVisible = true;
-};
-
-function hideBackOverlay() {
-  if (!backOverlayEl || !backOverlayVisible) {
-    return;
-  }
-  backOverlayEl.classList.remove('visible');
-  backOverlayVisible = false;
-}
-
 const refreshNavigationState = () => {
   // No-op now that there is no dedicated back button.
-};
-
-const handleMouseMove = (event) => {
-  if (!backOverlayEl) {
-    return;
-  }
-
-  const { clientY } = event;
-  const distanceFromBottom = window.innerHeight - clientY;
-  const movingDown = clientY >= lastMouseY;
-  lastMouseY = clientY;
-
-  if (movingDown && distanceFromBottom <= 40) {
-    showBackOverlay();
-    return;
-  }
-
-  if (backOverlayVisible && clientY < getOverlayHideThreshold()) {
-    hideBackOverlay();
-  }
-};
-
-const handleMouseLeave = (event) => {
-  if (!backOverlayEl) {
-    return;
-  }
-
-  // If exiting at the bottom edge, keep the overlay visible.
-  if (event.clientY >= window.innerHeight - 2) {
-    return;
-  }
-
-  if (backOverlayVisible) {
-    const threshold = getOverlayHideThreshold();
-    if (typeof event.clientY === 'number' && !Number.isNaN(event.clientY) && event.clientY >= threshold) {
-      return;
-    }
-  }
-
-  hideBackOverlay();
 };
 
 const updateWindowTitle = () => {
@@ -1317,165 +1229,12 @@ webviews.forEach((webview) => {
   attachHandlers(webview, paneKey);
 });
 
-if (backOverlayEl) {
-  document.addEventListener('mousemove', handleMouseMove, true);
-  document.addEventListener('mouseleave', handleMouseLeave, true);
-  window.addEventListener('blur', hideBackOverlay);
-
-  const embeddedFrame = document.createElement('iframe');
-  embeddedFrame.src = 'http://127.0.0.1:4333';
-  embeddedFrame.className = 'overlay-iframe';
-  embeddedFrame.allow = 'clipboard-read; clipboard-write';
-  embeddedFrame.title = 'Embedded Site';
-
-  backOverlayEl.appendChild(embeddedFrame);
-}
-
-if (bottomActivationZoneEl) {
-  const triggerOverlay = () => {
-    showBackOverlay();
-    lastMouseY = window.innerHeight;
-  };
-  bottomActivationZoneEl.addEventListener('mouseenter', triggerOverlay, true);
-  bottomActivationZoneEl.addEventListener('mousemove', triggerOverlay, true);
-}
-
-if (historyTagsEl) {
-  historyTagsEl.addEventListener('click', (event) => {
-    const button = event.target.closest('.tag-chip');
-    if (!button) {
-      return;
-    }
-    const { tag } = button.dataset;
-    if (tag === '__all__') {
-      setActiveTag(null, true);
-      return;
-    }
-    if (!tag) {
-      return;
-    }
-    setActiveTag(tag);
-  });
-}
-
-if (historyStripEl) {
-  historyStripEl.addEventListener('scroll', () => {
-    if (historyHeadlineEl) {
-      syncHistoryScrollPositions(historyStripEl, historyHeadlineEl);
-    }
-  });
-
-  historyStripEl.addEventListener('click', (event) => {
-    let target = event.target.closest('.history-thumb');
-    if (!target) {
-      const item = event.target.closest('.history-item');
-      target = item ? item.querySelector('.history-thumb') : null;
-    }
-
-    if (!target) {
-      return;
-    }
-
-    const { url } = target.dataset;
-    if (!url || !rightPane) {
-      return;
-    }
-
-    try {
-      rightPane.loadURL(url);
-      hideBackOverlay();
-    } catch (error) {
-      console.error('Failed to navigate to history URL', error);
-    }
-  });
-}
-
-if (historyHeadlineEl) {
-  historyHeadlineEl.addEventListener('scroll', () => {
-    syncHistoryScrollPositions(historyHeadlineEl, historyStripEl);
-  });
-
-  historyHeadlineEl.addEventListener('click', (event) => {
-    const target = event.target.closest('.history-headline-item');
-    if (!target) {
-      return;
-    }
-
-    const { url } = target.dataset;
-    if (!url || !rightPane) {
-      return;
-    }
-
-    try {
-      rightPane.loadURL(url);
-      hideBackOverlay();
-    } catch (error) {
-      console.error('Failed to navigate to history URL', error);
-    }
-  });
-}
-
-if (historyRefreshButton) {
-  historyRefreshButton.addEventListener('click', () => {
-    if (!rightPane) {
-      return;
-    }
-
-    try {
-      rightPane.reload();
-    } catch (error) {
-      console.error('Failed to refresh browser pane', error);
-    }
-  });
-}
-
-if (historyCopyButton) {
-  historyCopyButton.addEventListener('click', async () => {
-    if (!rightPane) {
-      return;
-    }
-
-    let urlToShare = '';
-    try {
-      urlToShare = rightPane.getURL() || '';
-    } catch (error) {
-      console.error('Failed to read browser URL', error);
-      return;
-    }
-
-    if (!urlToShare) {
-      return;
-    }
-
-    if (!navigator.clipboard) {
-      console.warn('Clipboard API is not available in this environment.');
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(urlToShare);
-      historyCopyButton.classList.add('copied');
-      window.setTimeout(() => {
-        historyCopyButton.classList.remove('copied');
-      }, 1500);
-    } catch (error) {
-      console.error('Failed to copy URL to clipboard', error);
-    }
-  });
-}
-
-startHistoryClock();
-renderHistoryUI();
-showBackOverlay();
+// Removed back overlay and history UI event listeners
 
 // Ensure initial title is set
 updateWindowTitle();
 
-window.addEventListener('beforeunload', () => {
-  if (historyClockInterval) {
-    clearInterval(historyClockInterval);
-  }
-});
+// Removed history clock cleanup
 
 // Favicon Footer Implementation
 const FAVICON_DATA = [
@@ -1563,7 +1322,21 @@ class FaviconFooter {
     this.displayTimeEl = document.getElementById('display-time');
     this.currentWordEl = document.getElementById('current-word');
 
+    if (
+      !this.footer ||
+      !this.iconContainer ||
+      !this.lineContainer ||
+      !this.footerContent ||
+      !this.cursorLine ||
+      !this.displayTimeEl ||
+      !this.currentWordEl
+    ) {
+      this.isReady = false;
+      return;
+    }
+
     this.init();
+    this.isReady = true;
   }
 
   init() {
@@ -1681,6 +1454,10 @@ class FaviconFooter {
 
   renderFavicons() {
     const iconScrollArea = document.getElementById('icon-scroll-area');
+    if (!iconScrollArea) {
+      return;
+    }
+
     iconScrollArea.style.width = `${FAVICON_DATA.length * ICON_SPACING - 24}px`;
 
     FAVICON_DATA.forEach((site) => {
@@ -1703,6 +1480,10 @@ class FaviconFooter {
 
   renderLines() {
     const lineScrollArea = document.getElementById('line-scroll-area');
+    if (!lineScrollArea) {
+      return;
+    }
+
     lineScrollArea.style.width = `${FAVICON_DATA.length * ICON_SPACING - 24}px`;
 
     const lineSegments = this.generateLineSegments();
@@ -1719,6 +1500,10 @@ class FaviconFooter {
   }
 
   setupEventListeners() {
+    if (!this.iconContainer || !this.lineContainer || !this.footerContent) {
+      return;
+    }
+
     // Scroll synchronization
     const createScrollSyncHandler = (source, target) => {
       let isScrolling = false;
@@ -1761,7 +1546,9 @@ class FaviconFooter {
       // Update cursor line position
       const footerRect = this.footerContent.getBoundingClientRect();
       const lineX = e.clientX - footerRect.left;
-      this.cursorLine.style.transform = `translateX(${lineX - footerRect.width / 2}px)`;
+      if (this.cursorLine) {
+        this.cursorLine.style.transform = `translateX(${lineX - footerRect.width / 2}px)`;
+      }
 
       if (this.iconContainer) {
         const scrollLeft = this.iconContainer.scrollLeft;
@@ -1772,7 +1559,9 @@ class FaviconFooter {
 
     this.footerContent.addEventListener('mouseleave', () => {
       this.cursorX = null;
-      this.cursorLine.style.transform = 'translateX(0px)';
+      if (this.cursorLine) {
+        this.cursorLine.style.transform = 'translateX(0px)';
+      }
     });
   }
 
@@ -1781,7 +1570,9 @@ class FaviconFooter {
     const timeOffsetMinutes = Math.floor(referencePosition / TIME_SCROLL_RATIO);
     const adjustedTime = new Date(this.baseTime.getTime() - timeOffsetMinutes * 60000);
     this.displayTime = this.formatTime(adjustedTime);
-    this.displayTimeEl.textContent = this.displayTime;
+    if (this.displayTimeEl) {
+      this.displayTimeEl.textContent = this.displayTime;
+    }
 
     // Word/color detection based on position
     const iconIndex = Math.floor(referencePosition / ICON_SPACING);
@@ -1791,11 +1582,17 @@ class FaviconFooter {
     this.currentWord = mapping.word;
     this.wordColor = mapping.className;
 
-    this.currentWordEl.textContent = this.currentWord;
-    this.currentWordEl.className = this.wordColor;
+    if (this.currentWordEl) {
+      this.currentWordEl.textContent = this.currentWord;
+      this.currentWordEl.className = `time-word ${this.wordColor}`;
+    }
   }
 
   startTimeClock() {
+    if (!this.displayTimeEl) {
+      return;
+    }
+
     const updateTime = () => {
       const now = new Date();
       this.currentTime = this.formatTime(now);
@@ -1810,6 +1607,20 @@ class FaviconFooter {
 }
 
 // Initialize the favicon footer
-document.addEventListener('DOMContentLoaded', () => {
-  new FaviconFooter();
-});
+let faviconFooterInstance = null;
+const initFaviconFooter = () => {
+  if (faviconFooterInstance) {
+    return;
+  }
+
+  const instance = new FaviconFooter();
+  if (instance && instance.isReady) {
+    faviconFooterInstance = instance;
+  }
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initFaviconFooter);
+} else {
+  initFaviconFooter();
+}

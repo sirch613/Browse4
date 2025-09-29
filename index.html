@@ -33,35 +33,25 @@
         </section>
       </main>
 
-      <div class="bottom-activation-zone" id="bottom-activation-zone" aria-hidden="true"></div>
-      <section class="back-overlay" id="back-overlay" aria-hidden="true"></section>
+      <footer class="favicon-footer" id="favicon-footer" aria-live="polite">
+        <div class="footer-content" id="footer-content">
+          <div class="footer-header" aria-hidden="true">
+            <span class="time-display" id="display-time">--:--</span>
+            <span class="time-word word-red" id="current-word">work</span>
+          </div>
+          <div class="footer-track">
+            <div class="line-container" id="line-container" aria-hidden="true">
+              <div class="line-scroll-area" id="line-scroll-area"></div>
+            </div>
+            <div class="icon-container" id="icon-container" aria-hidden="true">
+              <div class="icon-scroll-area" id="icon-scroll-area"></div>
+            </div>
+            <div class="cursor-line" id="cursor-line" aria-hidden="true"></div>
+          </div>
+        </div>
+      </footer>
     </div>
 
-    <!-- Favicon Timeline Footer - Overlay Panel -->
-    <footer class="favicon-footer" id="favicon-footer">
-      <div class="time-display-container">
-        <div class="time-display" id="time-display">
-          <span id="display-time">12:00</span> <span id="current-word" class="word-red">work</span>
-        </div>
-      </div>
-
-      <div class="footer-content" id="footer-content">
-        <div class="cursor-line" id="cursor-line"></div>
-        <div class="footer-inner">
-          <div class="icon-container" id="icon-container">
-            <div class="icon-scroll-area" id="icon-scroll-area">
-              <!-- Favicons will be dynamically populated here -->
-            </div>
-          </div>
-
-          <div class="line-container" id="line-container">
-            <div class="line-scroll-area" id="line-scroll-area">
-              <!-- Color lines will be dynamically populated here -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
     <script type="module" src="./renderer.js"></script>
   </body>
 </html>

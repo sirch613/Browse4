@@ -136,3 +136,13 @@
     scrollbar-width: none; /* Firefox */
   }
 }
+
+/* Hide dark popup overlays */
+[class*="modal"],
+[class*="overlay"][style*="background"],
+[role="dialog"],
+[role="alertdialog"],
+div[style*="position: fixed"][style*="inset"],
+div[style*="position: fixed"][style*="z-index"] {
+  display: none !important;
+}
