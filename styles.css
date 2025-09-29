@@ -98,8 +98,9 @@ body {
   bottom: 0;
   height: 18px;
   z-index: 150;
-  pointer-events: auto;
+  pointer-events: none;
   background: transparent;
+  display: none;
 }
 
 .back-overlay {
@@ -487,7 +488,7 @@ body {
   right: 0;
   background: #f9f9f9;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  z-index: 10000;
   min-height: 140px;
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
