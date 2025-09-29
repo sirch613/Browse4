@@ -22,9 +22,10 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   background-color: var(--background);
   color: var(--text);
+  overflow: hidden;
 }
 
 body {
@@ -37,6 +38,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100vh;
 }
 
 .split {
@@ -479,11 +481,39 @@ body {
 
 /* Favicon Footer Styles */
 .favicon-footer {
-  position: relative;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: #f9f9f9;
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
-  z-index: 100;
-  min-height: 120px;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-height: 140px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.favicon-footer.visible {
+  transform: translateY(0);
+}
+
+.favicon-footer.peek {
+  transform: translateY(calc(100% - 20px));
+}
+
+/* Peek indicator */
+.favicon-footer.peek::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
 }
 
 .time-display-container {
@@ -596,4 +626,27 @@ body {
 
 .line-green {
   background: linear-gradient(to right, transparent, #4ade80, transparent);
+}
+
+/* Bottom trigger zone for footer */
+.footer-trigger-zone {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  z-index: 999;
+  pointer-events: none;
+}
+
+/* Enhanced footer backdrop */
+.favicon-footer::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.05));
+  pointer-events: none;
 }
