@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>browse</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <div class="window-drag-area" aria-hidden="true"></div>
+      <main class="split" id="split">
+        <section class="main-surface" id="pane-right">
+          <webview
+            class="browser-view"
+            data-pane="right"
+            allowpopups
+            src="https://www.sirch.ai"
+            autosize="on"
+            preload="./pane-preload.js"
+          ></webview>
+        </section>
+        <section class="preview-surface" id="pane-left">
+          <webview
+            class="browser-view"
+            data-pane="left"
+            allowpopups
+            src="https://duckduckgo.com"
+            autosize="on"
+            useragent="Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
+          ></webview>
+        </section>
+      </main>
+
+      <!-- Favicon Timeline Footer -->
+      <footer class="favicon-footer" id="favicon-footer">
+        <div class="time-display-container">
+          <div class="time-display" id="time-display">
+            <span id="display-time">12:00</span> <span id="current-word" class="word-red">work</span>
+          </div>
+        </div>
+
+        <div class="footer-content" id="footer-content">
+          <div class="cursor-line" id="cursor-line"></div>
+          <div class="footer-inner">
+            <div class="icon-container" id="icon-container">
+              <div class="icon-scroll-area" id="icon-scroll-area">
+                <!-- Favicons will be dynamically populated here -->
+              </div>
+            </div>
+
+            <div class="line-container" id="line-container">
+              <div class="line-scroll-area" id="line-scroll-area">
+                <!-- Color lines will be dynamically populated here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      <div class="bottom-activation-zone" id="bottom-activation-zone" aria-hidden="true"></div>
+      <section class="back-overlay" id="back-overlay" aria-hidden="true"></section>
+    </div>
+    <script type="module" src="./renderer.js"></script>
+  </body>
+</html>
