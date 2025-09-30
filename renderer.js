@@ -1197,7 +1197,16 @@ const attachHandlers = (webview, paneKey) => {
 
     webview.addEventListener('did-navigate', syncPreview);
     webview.addEventListener('did-navigate-in-page', syncPreview);
-    webview.addEventListener('did-stop-loading', captureSnapshotForRightPane);
+    webview.addEventListener('did-stop-loading', () => {
+      captureSnapshotForRightPane();
+
+      // Add to footer favicons
+      if (paneKey === 'right' && faviconFooterInstance) {
+        const url = webview.getURL();
+        const title = webview.getTitle();
+        faviconFooterInstance.addVisitedSite(url, title);
+      }
+    });
 
     webview.addEventListener('ipc-message', (event) => {
       if (event.channel !== 'hn:item-hover') {
@@ -1237,58 +1246,7 @@ updateWindowTitle();
 // Removed history clock cleanup
 
 // Favicon Footer Implementation
-const FAVICON_DATA = [
-  { name: "Google", url: "https://www.google.com/favicon.ico" },
-  { name: "GitHub", url: "https://github.com/favicon.ico" },
-  { name: "Twitter", url: "https://twitter.com/favicon.ico" },
-  { name: "Facebook", url: "https://facebook.com/favicon.ico" },
-  { name: "YouTube", url: "https://youtube.com/favicon.ico" },
-  { name: "LinkedIn", url: "https://linkedin.com/favicon.ico" },
-  { name: "Instagram", url: "https://instagram.com/favicon.ico" },
-  { name: "Reddit", url: "https://reddit.com/favicon.ico" },
-  { name: "Amazon", url: "https://amazon.com/favicon.ico" },
-  { name: "Netflix", url: "https://netflix.com/favicon.ico" },
-  { name: "Spotify", url: "https://spotify.com/favicon.ico" },
-  { name: "Apple", url: "https://apple.com/favicon.ico" },
-  { name: "Microsoft", url: "https://microsoft.com/favicon.ico" },
-  { name: "Stack Overflow", url: "https://stackoverflow.com/favicon.ico" },
-  { name: "Medium", url: "https://medium.com/favicon.ico" },
-  { name: "Vercel", url: "https://vercel.com/favicon.ico" },
-  { name: "Discord", url: "https://discord.com/favicon.ico" },
-  { name: "Slack", url: "https://slack.com/favicon.ico" },
-  { name: "Zoom", url: "https://zoom.us/favicon.ico" },
-  { name: "Dropbox", url: "https://dropbox.com/favicon.ico" },
-  { name: "Notion", url: "https://notion.so/favicon.ico" },
-  { name: "Figma", url: "https://figma.com/favicon.ico" },
-  { name: "Adobe", url: "https://adobe.com/favicon.ico" },
-  { name: "Canva", url: "https://canva.com/favicon.ico" },
-  { name: "Trello", url: "https://trello.com/favicon.ico" },
-  { name: "Asana", url: "https://asana.com/favicon.ico" },
-  { name: "Shopify", url: "https://shopify.com/favicon.ico" },
-  { name: "Stripe", url: "https://stripe.com/favicon.ico" },
-  { name: "PayPal", url: "https://paypal.com/favicon.ico" },
-  { name: "Airbnb", url: "https://airbnb.com/favicon.ico" },
-  { name: "Uber", url: "https://uber.com/favicon.ico" },
-  { name: "Lyft", url: "https://lyft.com/favicon.ico" },
-  { name: "Pinterest", url: "https://pinterest.com/favicon.ico" },
-  { name: "TikTok", url: "https://tiktok.com/favicon.ico" },
-  { name: "Snapchat", url: "https://snapchat.com/favicon.ico" },
-  { name: "WhatsApp", url: "https://whatsapp.com/favicon.ico" },
-  { name: "Telegram", url: "https://telegram.org/favicon.ico" },
-  { name: "Signal", url: "https://signal.org/favicon.ico" },
-  { name: "Twitch", url: "https://twitch.tv/favicon.ico" },
-  { name: "Steam", url: "https://store.steampowered.com/favicon.ico" },
-  { name: "Epic Games", url: "https://epicgames.com/favicon.ico" },
-  { name: "PlayStation", url: "https://playstation.com/favicon.ico" },
-  { name: "Xbox", url: "https://xbox.com/favicon.ico" },
-  { name: "Nintendo", url: "https://nintendo.com/favicon.ico" },
-  { name: "Wikipedia", url: "https://wikipedia.org/favicon.ico" },
-  { name: "BBC", url: "https://bbc.com/favicon.ico" },
-  { name: "CNN", url: "https://cnn.com/favicon.ico" },
-  { name: "The New York Times", url: "https://nytimes.com/favicon.ico" },
-  { name: "ESPN", url: "https://espn.com/favicon.ico" },
-  { name: "IMDb", url: "https://imdb.com/favicon.ico" }
-];
+const FAVICON_DATA = [];
 
 const COLORS = ["line-red", "line-blue", "line-green"];
 const HEIGHT_OFFSETS = [0, 8, 16];
@@ -1311,6 +1269,7 @@ class FaviconFooter {
     this.baseTime = new Date();
     this.cursorX = null;
     this.footerVisible = false;
+    this.visitedSites = []; // Track visited sites
 
     this.footer = document.getElementById('favicon-footer');
     this.iconContainer = document.getElementById('icon-container');
@@ -1340,9 +1299,34 @@ class FaviconFooter {
   init() {
     this.setupEventListeners();
     this.setupFooterVisibility();
-    this.renderFavicons();
-    this.renderLines();
     this.startTimeClock();
+  }
+
+  addVisitedSite(url, title) {
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname;
+
+      // Check if site already exists
+      const exists = this.visitedSites.some(site => site.hostname === hostname);
+      if (exists) {
+        return;
+      }
+
+      // Add new site
+      const faviconUrl = `${urlObj.protocol}//${hostname}/favicon.ico`;
+      this.visitedSites.push({
+        name: title || hostname,
+        url: faviconUrl,
+        hostname: hostname
+      });
+
+      // Re-render footer
+      this.renderFavicons();
+      this.renderLines();
+    } catch (error) {
+      console.error('Failed to add visited site', error);
+    }
   }
 
   setupFooterVisibility() {
@@ -1387,7 +1371,7 @@ class FaviconFooter {
     const lines = [];
     let currentGroup = { color: -1, start: 0, end: 0 };
 
-    FAVICON_DATA.forEach((_, index) => {
+    this.visitedSites.forEach((_, index) => {
       const colorGroupIndex = Math.floor(index / 3) % COLORS.length;
 
       if (currentGroup.color === colorGroupIndex) {
@@ -1424,9 +1408,12 @@ class FaviconFooter {
       return;
     }
 
-    iconScrollArea.style.width = `${FAVICON_DATA.length * ICON_SPACING - 24}px`;
+    // Clear existing favicons
+    iconScrollArea.innerHTML = '';
 
-    FAVICON_DATA.forEach((site) => {
+    iconScrollArea.style.width = `${this.visitedSites.length * ICON_SPACING - 24}px`;
+
+    this.visitedSites.forEach((site) => {
       const item = document.createElement('div');
       item.className = 'favicon-item';
 
@@ -1450,7 +1437,10 @@ class FaviconFooter {
       return;
     }
 
-    lineScrollArea.style.width = `${FAVICON_DATA.length * ICON_SPACING - 24}px`;
+    // Clear existing lines
+    lineScrollArea.innerHTML = '';
+
+    lineScrollArea.style.width = `${this.visitedSites.length * ICON_SPACING - 24}px`;
 
     const lineSegments = this.generateLineSegments();
 
