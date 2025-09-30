@@ -1348,21 +1348,37 @@ class FaviconFooter {
   }
 
   setupFooterVisibility() {
-    // Global mouse movement detection
+    const ACTIVATION_THRESHOLD = 20;
+    const DEACTIVATION_MARGIN = 10; // Extra margin to prevent flicker
+    let cachedFooterHeight = null;
+
+    // Cache footer height on first show, recalculate on resize
+    const getFooterHeight = () => {
+      if (!cachedFooterHeight) {
+        cachedFooterHeight = this.footer.offsetHeight;
+      }
+      return cachedFooterHeight;
+    };
+
+    window.addEventListener('resize', () => {
+      cachedFooterHeight = null; // Invalidate cache
+    });
+
     document.addEventListener('mousemove', (e) => {
       const windowHeight = window.innerHeight;
       const mouseY = e.clientY;
-      const activationThreshold = windowHeight - 20; // 20px from bottom
 
-      if (mouseY >= activationThreshold) {
-        // Activate when cursor gets within 20px of bottom
-        this.showFooter();
-      } else if (this.footerVisible) {
-        // Only hide if cursor moves above the footer's visible area
-        const footerHeight = this.footer.offsetHeight;
-        const footerTopPosition = windowHeight - footerHeight;
+      if (!this.footerVisible) {
+        // Show: simple threshold
+        if (mouseY >= windowHeight - ACTIVATION_THRESHOLD) {
+          this.showFooter();
+        }
+      } else {
+        // Hide: must move above footer + margin
+        const footerHeight = getFooterHeight();
+        const hideThreshold = windowHeight - footerHeight - DEACTIVATION_MARGIN;
 
-        if (mouseY < footerTopPosition) {
+        if (mouseY < hideThreshold) {
           this.hideFooter();
         }
       }
