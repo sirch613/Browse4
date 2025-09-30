@@ -1348,40 +1348,22 @@ class FaviconFooter {
   }
 
   setupFooterVisibility() {
-    const ACTIVATION_THRESHOLD = 20;
-    const DEACTIVATION_MARGIN = 10; // Extra margin to prevent flicker
-    let cachedFooterHeight = null;
+    // Get trigger elements
+    const showTrigger = document.getElementById('footer-trigger-show');
+    const hideTrigger = document.getElementById('footer-trigger-hide');
 
-    // Cache footer height on first show, recalculate on resize
-    const getFooterHeight = () => {
-      if (!cachedFooterHeight) {
-        cachedFooterHeight = this.footer.offsetHeight;
-      }
-      return cachedFooterHeight;
-    };
+    if (!showTrigger || !hideTrigger) {
+      return;
+    }
 
-    window.addEventListener('resize', () => {
-      cachedFooterHeight = null; // Invalidate cache
+    // Show footer on hover over lower circle
+    showTrigger.addEventListener('mouseenter', () => {
+      this.showFooter();
     });
 
-    document.addEventListener('mousemove', (e) => {
-      const windowHeight = window.innerHeight;
-      const mouseY = e.clientY;
-
-      if (!this.footerVisible) {
-        // Show: simple threshold
-        if (mouseY >= windowHeight - ACTIVATION_THRESHOLD) {
-          this.showFooter();
-        }
-      } else {
-        // Hide: must move above footer + margin
-        const footerHeight = getFooterHeight();
-        const hideThreshold = windowHeight - footerHeight - DEACTIVATION_MARGIN;
-
-        if (mouseY < hideThreshold) {
-          this.hideFooter();
-        }
-      }
+    // Hide footer on hover over upper circle
+    hideTrigger.addEventListener('mouseenter', () => {
+      this.hideFooter();
     });
   }
 
