@@ -486,21 +486,19 @@ body {
   right: 0;
   bottom: 0;
   width: 100%;
-  transform: none;
-  opacity: 1;
-  pointer-events: auto;
-  transition: none;
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   z-index: 240;
   background: #f9fafb;
   box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.favicon-footer.peek {
-  /* Remove popup behavior */
-}
-
 .favicon-footer.visible {
-  /* Remove popup behavior */
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .footer-content {

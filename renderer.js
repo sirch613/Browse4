@@ -1341,9 +1341,48 @@ class FaviconFooter {
 
   init() {
     this.setupEventListeners();
+    this.setupFooterVisibility();
     this.renderFavicons();
     this.renderLines();
     this.startTimeClock();
+  }
+
+  setupFooterVisibility() {
+    // Global mouse movement detection
+    document.addEventListener('mousemove', (e) => {
+      const windowHeight = window.innerHeight;
+      const mouseY = e.clientY;
+      const bottomThreshold = windowHeight - 50; // 50px from bottom
+
+      if (mouseY > bottomThreshold) {
+        this.showFooter();
+      } else if (!this.isMouseInBottomSection) {
+        this.hideFooter();
+      }
+    });
+
+    // Footer hover detection
+    this.footer.addEventListener('mouseenter', () => {
+      this.isMouseInBottomSection = true;
+    });
+
+    this.footer.addEventListener('mouseleave', () => {
+      this.isMouseInBottomSection = false;
+    });
+  }
+
+  showFooter() {
+    if (!this.footerVisible) {
+      this.footerVisible = true;
+      this.footer.classList.add('visible');
+    }
+  }
+
+  hideFooter() {
+    if (this.footerVisible) {
+      this.footerVisible = false;
+      this.footer.classList.remove('visible');
+    }
   }
 
   formatTime(date) {
