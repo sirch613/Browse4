@@ -1341,76 +1341,9 @@ class FaviconFooter {
 
   init() {
     this.setupEventListeners();
-    this.setupFooterVisibility();
     this.renderFavicons();
     this.renderLines();
     this.startTimeClock();
-  }
-
-  showFooter() {
-    if (this.hideTimeout) {
-      clearTimeout(this.hideTimeout);
-      this.hideTimeout = null;
-    }
-
-    if (!this.footerVisible) {
-      this.footerVisible = true;
-      this.footer.classList.add('visible');
-      this.footer.classList.remove('peek');
-    }
-  }
-
-  hideFooter() {
-    if (this.footerVisible) {
-      this.footerVisible = false;
-      this.footer.classList.remove('visible');
-      this.footer.classList.remove('peek');
-    }
-  }
-
-  peekFooter() {
-    if (!this.footerVisible) {
-      this.footer.classList.add('peek');
-      this.footer.classList.remove('visible');
-    }
-  }
-
-  setupFooterVisibility() {
-    // Global mouse movement detection
-    document.addEventListener('mousemove', (e) => {
-      const windowHeight = window.innerHeight;
-      const mouseY = e.clientY;
-      const bottomThreshold = windowHeight - 100; // 100px from bottom
-      const veryBottomThreshold = windowHeight - 30; // 30px from bottom
-
-      if (mouseY > veryBottomThreshold) {
-        this.showFooter();
-      } else if (mouseY > bottomThreshold) {
-        this.peekFooter();
-      } else if (this.footerVisible && !this.isMouseInBottomSection) {
-        // Only hide if mouse is not in footer area
-        this.hideTimeout = setTimeout(() => {
-          this.hideFooter();
-        }, 1000); // 1 second delay before hiding
-      }
-    });
-
-    // Footer hover detection
-    this.footer.addEventListener('mouseenter', () => {
-      this.isMouseInBottomSection = true;
-      this.showFooter();
-      if (this.hideTimeout) {
-        clearTimeout(this.hideTimeout);
-        this.hideTimeout = null;
-      }
-    });
-
-    this.footer.addEventListener('mouseleave', () => {
-      this.isMouseInBottomSection = false;
-      this.hideTimeout = setTimeout(() => {
-        this.hideFooter();
-      }, 500); // Shorter delay when leaving footer
-    });
   }
 
   formatTime(date) {
