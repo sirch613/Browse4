@@ -1310,9 +1310,7 @@ class FaviconFooter {
     this.wordColor = "word-red";
     this.baseTime = new Date();
     this.cursorX = null;
-    this.isMouseInBottomSection = false;
     this.footerVisible = false;
-    this.hideTimeout = null;
 
     this.footer = document.getElementById('favicon-footer');
     this.iconContainer = document.getElementById('icon-container');
@@ -1486,7 +1484,7 @@ class FaviconFooter {
         const containerWidth = source.clientWidth;
 
         let referencePosition;
-        if (this.isMouseInBottomSection && this.cursorX !== null) {
+        if (this.cursorX !== null) {
           referencePosition = scrollLeft + this.cursorX;
         } else {
           referencePosition = scrollLeft + containerWidth / 2;
