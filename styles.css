@@ -674,9 +674,11 @@ body {
 .footer-trigger-show {
   /* Lower bar - show footer - touching bottom */
   bottom: 0;
+  height: 20px;
 }
 
 .footer-trigger-hide {
-  /* Upper bar - hide footer - 24px up from bottom */
-  bottom: 24px;
+  /* Upper bar - hide footer - at top of footer when visible */
+  bottom: 200px;
+  height: 30px;
 }
