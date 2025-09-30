@@ -1348,16 +1348,32 @@ class FaviconFooter {
   }
 
   setupFooterVisibility() {
+    let showTimeout = null;
+
     // Global mouse movement detection
     document.addEventListener('mousemove', (e) => {
       const windowHeight = window.innerHeight;
       const mouseY = e.clientY;
-      const bottomThreshold = windowHeight - 50; // 50px from bottom
+      const bottomThreshold = windowHeight - 10; // 10px from bottom
 
       if (mouseY > bottomThreshold) {
-        this.showFooter();
-      } else if (!this.isMouseInBottomSection) {
-        this.hideFooter();
+        // Only show if cursor stays near bottom for 200ms
+        if (!showTimeout) {
+          showTimeout = setTimeout(() => {
+            this.showFooter();
+            showTimeout = null;
+          }, 200);
+        }
+      } else {
+        // Cancel pending show if cursor moves away
+        if (showTimeout) {
+          clearTimeout(showTimeout);
+          showTimeout = null;
+        }
+
+        if (!this.isMouseInBottomSection) {
+          this.hideFooter();
+        }
       }
     });
 
