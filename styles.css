@@ -640,9 +640,9 @@ body {
 .cursor-line {
   position: absolute;
   left: 50%;
-  top: 0;
+  bottom: 30px;
   width: 2px;
-  height: 100%;
+  height: calc(100% - 72px);
   background: #000000;
   border-radius: 0;
   transform: translateX(-50%);
