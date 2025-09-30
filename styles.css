@@ -657,7 +657,7 @@ body {
   bottom: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 24px;
   z-index: 250;
 }
 
