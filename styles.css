@@ -39,6 +39,31 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  position: relative;
+}
+
+.screenshot-overlay {
+  position: absolute;
+  top: var(--window-chrome-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--background);
+  display: none;
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.screenshot-overlay.visible {
+  display: flex;
+}
+
+.screenshot-overlay img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .split {

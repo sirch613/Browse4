@@ -1200,11 +1200,13 @@ const attachHandlers = (webview, paneKey) => {
     webview.addEventListener('did-stop-loading', () => {
       captureSnapshotForRightPane();
 
-      // Add to footer favicons
+      // Add to footer favicons with screenshot
       if (paneKey === 'right' && faviconFooterInstance) {
         const url = webview.getURL();
         const title = webview.getTitle();
-        faviconFooterInstance.addVisitedSite(url, title);
+        // Find the screenshot for this URL from historyItems
+        const historyItem = historyItems.find(item => item.url === url);
+        faviconFooterInstance.addVisitedSite(url, title, historyItem?.dataUrl);
       }
     });
 
@@ -1278,6 +1280,8 @@ class FaviconFooter {
     this.cursorLine = document.getElementById('cursor-line');
     this.displayTimeEl = document.getElementById('display-time');
     this.currentWordEl = document.getElementById('current-word');
+    this.screenshotOverlay = document.getElementById('screenshot-overlay');
+    this.screenshotImage = document.getElementById('screenshot-image');
 
     if (
       !this.footer ||
@@ -1286,7 +1290,9 @@ class FaviconFooter {
       !this.footerContent ||
       !this.cursorLine ||
       !this.displayTimeEl ||
-      !this.currentWordEl
+      !this.currentWordEl ||
+      !this.screenshotOverlay ||
+      !this.screenshotImage
     ) {
       this.isReady = false;
       return;
@@ -1302,14 +1308,19 @@ class FaviconFooter {
     this.startTimeClock();
   }
 
-  addVisitedSite(url, title) {
+  addVisitedSite(url, title, screenshotDataUrl) {
     try {
       const urlObj = new URL(url);
       const hostname = urlObj.hostname;
 
       // Check if site already exists
-      const exists = this.visitedSites.some(site => site.hostname === hostname);
-      if (exists) {
+      const existingIndex = this.visitedSites.findIndex(site => site.hostname === hostname);
+      if (existingIndex !== -1) {
+        // Update the existing site's URL and screenshot
+        this.visitedSites[existingIndex].pageUrl = url;
+        if (screenshotDataUrl) {
+          this.visitedSites[existingIndex].screenshot = screenshotDataUrl;
+        }
         return;
       }
 
@@ -1318,7 +1329,9 @@ class FaviconFooter {
       this.visitedSites.push({
         name: title || hostname,
         url: faviconUrl,
-        hostname: hostname
+        hostname: hostname,
+        pageUrl: url,
+        screenshot: screenshotDataUrl
       });
 
       // Re-render footer
@@ -1353,6 +1366,15 @@ class FaviconFooter {
     if (!this.footerVisible) {
       this.footerVisible = true;
       this.footer.classList.add('visible');
+      // Update screenshot display based on current position
+      if (this.iconContainer) {
+        const scrollLeft = this.iconContainer.scrollLeft;
+        const containerWidth = this.iconContainer.clientWidth;
+        const referencePosition = this.cursorX !== null
+          ? scrollLeft + this.cursorX
+          : scrollLeft + containerWidth / 2;
+        this.updateScreenshotDisplay(referencePosition);
+      }
     }
   }
 
@@ -1360,6 +1382,10 @@ class FaviconFooter {
     if (this.footerVisible) {
       this.footerVisible = false;
       this.footer.classList.remove('visible');
+      // Hide screenshot overlay when footer is hidden
+      if (this.screenshotOverlay) {
+        this.screenshotOverlay.classList.remove('visible');
+      }
     }
   }
 
@@ -1416,6 +1442,8 @@ class FaviconFooter {
     this.visitedSites.forEach((site) => {
       const item = document.createElement('div');
       item.className = 'favicon-item';
+      item.style.cursor = 'pointer';
+      item.title = `${site.name} - ${site.pageUrl}`;
 
       const img = document.createElement('img');
       img.src = site.url;
@@ -1425,6 +1453,13 @@ class FaviconFooter {
       img.onerror = () => {
         img.src = './generic-website-icon.png';
       };
+
+      // Add click handler to navigate to the site
+      item.addEventListener('click', () => {
+        if (site.pageUrl && rightPane) {
+          rightPane.loadURL(site.pageUrl);
+        }
+      });
 
       item.appendChild(img);
       iconScrollArea.appendChild(item);
@@ -1541,6 +1576,38 @@ class FaviconFooter {
     if (this.currentWordEl) {
       this.currentWordEl.textContent = this.currentWord;
       this.currentWordEl.className = `time-word ${this.wordColor}`;
+    }
+
+    // Display screenshot if cursor line aligns with an icon
+    this.updateScreenshotDisplay(referencePosition);
+  }
+
+  updateScreenshotDisplay(referencePosition) {
+    if (!this.footerVisible) {
+      // Hide screenshot when footer is not visible
+      if (this.screenshotOverlay) {
+        this.screenshotOverlay.classList.remove('visible');
+      }
+      return;
+    }
+
+    // Calculate which icon the cursor line is aligned with
+    const iconIndex = Math.round(referencePosition / ICON_SPACING);
+    const site = this.visitedSites[iconIndex];
+
+    if (site && site.screenshot) {
+      // Show the screenshot
+      if (this.screenshotImage) {
+        this.screenshotImage.src = site.screenshot;
+      }
+      if (this.screenshotOverlay) {
+        this.screenshotOverlay.classList.add('visible');
+      }
+    } else {
+      // Hide the screenshot
+      if (this.screenshotOverlay) {
+        this.screenshotOverlay.classList.remove('visible');
+      }
     }
   }
 
