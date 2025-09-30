@@ -1352,24 +1352,20 @@ class FaviconFooter {
     document.addEventListener('mousemove', (e) => {
       const windowHeight = window.innerHeight;
       const mouseY = e.clientY;
-      const bottomEdge = windowHeight - 1; // At the very bottom edge
+      const activationThreshold = windowHeight - 20; // 20px from bottom
 
-      if (mouseY >= bottomEdge) {
-        // Activate immediately when cursor reaches bottom edge
+      if (mouseY >= activationThreshold) {
+        // Activate when cursor gets within 20px of bottom
         this.showFooter();
-      } else if (!this.isMouseInBottomSection) {
-        // Only hide if cursor is back on main screen (not on footer)
-        this.hideFooter();
+      } else if (this.footerVisible) {
+        // Only hide if cursor moves above the footer's visible area
+        const footerHeight = this.footer.offsetHeight;
+        const footerTopPosition = windowHeight - footerHeight;
+
+        if (mouseY < footerTopPosition) {
+          this.hideFooter();
+        }
       }
-    });
-
-    // Footer hover detection - tracks if mouse is over the footer
-    this.footer.addEventListener('mouseenter', () => {
-      this.isMouseInBottomSection = true;
-    });
-
-    this.footer.addEventListener('mouseleave', () => {
-      this.isMouseInBottomSection = false;
     });
   }
 
