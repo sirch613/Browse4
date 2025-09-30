@@ -653,34 +653,30 @@ body {
 
 .footer-trigger-zone {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 250;
+  pointer-events: none;
 }
 
 .footer-trigger {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.footer-trigger:hover {
-  background: rgba(0, 0, 0, 0.8);
-  transform: scale(1.1);
-  border-color: rgba(255, 255, 255, 0.4);
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 24px;
+  background: transparent;
+  cursor: default;
+  pointer-events: auto;
 }
 
 .footer-trigger-show {
-  /* Lower circle - show footer */
+  /* Lower bar - show footer - touching bottom */
+  bottom: 0;
 }
 
 .footer-trigger-hide {
-  /* Upper circle - hide footer */
+  /* Upper bar - hide footer - 24px up from bottom */
+  bottom: 24px;
 }
